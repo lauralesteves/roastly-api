@@ -22,12 +22,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: npm
+          cache-dependency-path: js/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -37,17 +41,17 @@ jobs:
           aws-region: us-east-1
 
       - name: Build SAM application
-        run: sam build
+        run: PATH=$PWD/node_modules/.bin:$PATH sam build
 
       - name: Deploy SAM application
         run: |
           sam deploy \
-            --stack-name roastly-js-sam \
+            --stack-name roastly-api-js-sam \
             --capabilities CAPABILITY_IAM \
             --region us-east-1 \
             --resolve-s3 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
-              CertificateArn=${{ secrets.CERTIFICATE_ARN }}
+              "HostedZoneId=${{ secrets.HOSTED_ZONE_ID }}" \
+              "CertificateArn=${{ secrets.CERTIFICATE_ARN }}"

@@ -22,9 +22,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+          cache-dependency-path: golang/go.sum
 
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -39,12 +42,12 @@ jobs:
       - name: Deploy SAM application
         run: |
           sam deploy \
-            --stack-name roastly-go-sam \
+            --stack-name roastly-api-go-sam \
             --capabilities CAPABILITY_IAM \
             --region us-east-1 \
             --resolve-s3 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
-              CertificateArn=${{ secrets.CERTIFICATE_ARN }}
+              "HostedZoneId=${{ secrets.HOSTED_ZONE_ID }}" \
+              "CertificateArn=${{ secrets.CERTIFICATE_ARN }}"

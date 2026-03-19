@@ -52,7 +52,7 @@ js-serverless-deploy:
 
 js-sam-deploy:
 	cd js && npm ci && PATH=$$PWD/node_modules/.bin:$$PATH sam build && sam deploy \
-		--stack-name roastly-js-sam \
+		--stack-name roastly-api-js-sam \
 		--capabilities CAPABILITY_IAM \
 		--region us-east-1 \
 		--resolve-s3 \
@@ -110,7 +110,7 @@ go-serverless-deploy: go-serverless-build
 
 go-sam-deploy:
 	cd golang && sam build && sam deploy \
-		--stack-name roastly-go-sam \
+		--stack-name roastly-api-go-sam \
 		--capabilities CAPABILITY_IAM \
 		--region us-east-1 \
 		--resolve-s3 \
