@@ -1,0 +1,67 @@
+name: Build All
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  js-serverless:
+    name: JS Serverless
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npx sls package --stage local
+
+  js-sam:
+    name: JS AWS SAM
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - uses: aws-actions/setup-sam@v2
+      - run: PATH=$PWD/node_modules/.bin:$PATH sam build
+
+  go-serverless:
+    name: Go Serverless
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: golang
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: |
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bin/create/bootstrap ./lambdas/api/products/create
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bin/get/bootstrap ./lambdas/api/products/get
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bin/list/bootstrap ./lambdas/api/products/list
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bin/update/bootstrap ./lambdas/api/products/update
+          GOOS=linux GOARCH=arm64 go build -tags lambda.norpc -o bin/delete/bootstrap ./lambdas/api/products/delete
+
+  go-sam:
+    name: Go AWS SAM
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: golang
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: aws-actions/setup-sam@v2
+      - run: sam build
