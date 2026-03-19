@@ -41,10 +41,12 @@ export async function listProducts(): Promise<Product[]> {
 
 export async function updateProduct(id: string, updates: Partial<Product>): Promise<void> {
   const updateExpressions = [];
+  const expressionAttributeNames: Record<string, string> = {};
   const expressionAttributeValues: Record<string, string | number> = {};
 
   for (const [key, value] of Object.entries(updates)) {
-    updateExpressions.push(`${key} = :${key}`);
+    updateExpressions.push(`#${key} = :${key}`);
+    expressionAttributeNames[`#${key}`] = key;
     expressionAttributeValues[`:${key}`] = value;
   }
 
@@ -55,6 +57,7 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
       TableName,
       Key: { id },
       UpdateExpression: `set ${updateExpressions.join(', ')}`,
+      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
     }),
   );
