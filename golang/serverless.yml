@@ -1,0 +1,102 @@
+service: roastly-api-go
+
+provider:
+  name: aws
+  runtime: provided.al2023
+  architecture: arm64
+  stage: ${opt:stage, 'local'}
+  region: us-east-1
+  environment:
+    PRODUCTS_TABLE: ${self:service}-${sls:stage}-roastly-products
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.PRODUCTS_TABLE}
+
+package:
+  individually: true
+
+plugins:
+  - serverless-domain-manager
+
+functions:
+  createProduct:
+    handler: bootstrap
+    package:
+      artifact: bin/create.zip
+    events:
+      - httpApi:
+          path: /products
+          method: POST
+
+  getProduct:
+    handler: bootstrap
+    package:
+      artifact: bin/get.zip
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: GET
+
+  listProducts:
+    handler: bootstrap
+    package:
+      artifact: bin/list.zip
+    events:
+      - httpApi:
+          path: /products
+          method: GET
+
+  updateProduct:
+    handler: bootstrap
+    package:
+      artifact: bin/update.zip
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: PUT
+
+  deleteProduct:
+    handler: bootstrap
+    package:
+      artifact: bin/delete.zip
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: DELETE
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PRODUCTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+custom:
+  customDomain:
+    domainName: roastly-go-serverless.projects.lauraesteves.com
+    basePath: ''
+    stage: prod
+    certificateArn: arn:aws:acm:us-east-1:958586644302:certificate/0a94af1b-caf3-4b54-9c62-e92f472899dd
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    hostedZoneId: Z05144853OREESLU099I6
+    endpointType: regional
+    securityPolicy: tls_1_2
+    apiType: http
+    autoDomain: false
