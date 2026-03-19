@@ -125,6 +125,15 @@ make go-test
 | `make go-sam-clean` | Remove `.aws-sam/` |
 | `make go-clean` | Clean both |
 
+## Integration Tests
+
+Run all 5 CRUD operations against all endpoints:
+
+| Command | Description |
+| --- | --- |
+| `make test:prod` | Test all 4 production endpoints |
+| `make test:local` | Test local servers (JS Serverless, JS SAM, Go SAM) |
+
 ## Shared Resources
 
 - **DynamoDB Local** — `make db:up` / `make db:down` from the repo root

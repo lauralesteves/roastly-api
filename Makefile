@@ -9,7 +9,8 @@
        go-server go-serverless-server go-sam-server \
        go-build go-serverless-build go-sam-build \
        go-clean go-serverless-clean go-sam-clean \
-       go-test
+       go-test \
+       test\:local test\:prod
 
 # ── Prepare ─────────────────────────────────────────
 
@@ -159,3 +160,13 @@ go-sam-clean:
 
 go-test:
 	cd golang && go test ./...
+
+# ═══════════════════════════════════════════════════
+# Integration Tests
+# ═══════════════════════════════════════════════════
+
+test\:local:
+	./tests/test-all-endpoints.sh local
+
+test\:prod:
+	./tests/test-all-endpoints.sh prod
