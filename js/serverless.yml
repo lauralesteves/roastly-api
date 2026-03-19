@@ -4,16 +4,13 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-esbuild
+  - serverless-domain-manager
   - serverless-offline
 
 package:
   excludeDevDependencies: true
   exclude:
-    - .git/**
-    - .idea/**
-    - .vscode/**
     - .tests/**
-    - docs/**
 
 provider:
   name: aws
@@ -22,8 +19,6 @@ provider:
   region: us-east-1
   environment:
     PRODUCTS_TABLE: ${self:service}-${sls:stage}-roastly-products
-    AWS_ACCESS_KEY_ID: dummy
-    AWS_SECRET_ACCESS_KEY: dummy
   iam:
     role:
       statements:
@@ -54,6 +49,18 @@ resources:
         BillingMode: PAY_PER_REQUEST
 
 custom:
+  customDomain:
+    domainName: roastly-js-serverless.projects.lauraesteves.com
+    basePath: ''
+    stage: prod
+    certificateArn: arn:aws:acm:us-east-1:958586644302:certificate/0a94af1b-caf3-4b54-9c62-e92f472899dd
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    hostedZoneId: Z05144853OREESLU099I6
+    endpointType: regional
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false
   dynamodb:
     stages:
       - local
@@ -64,3 +71,5 @@ custom:
   serverless-offline:
     environment:
       IS_OFFLINE: true
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy

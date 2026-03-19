@@ -1,15 +1,22 @@
-name: Deploy Serverless API
+name: Deploy JS Serverless
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - 'js/**'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: js
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,11 +29,16 @@ jobs:
       - name: Install Serverless Framework
         run: npm install -g serverless
 
-      - name: Compile TypeScript
-        run: npx tsc
+      - name: Create custom domain
+        run: sls create_domain --stage prod
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        continue-on-error: true
 
       - name: Deploy to AWS
-        run: sls deploy --stage ${{ github.ref_name }}
+        run: sls deploy --stage prod
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
