@@ -46,5 +46,5 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
-              HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
-              CertificateArn=${{ secrets.CERTIFICATE_ARN }}
+              "HostedZoneId=${{ secrets.HOSTED_ZONE_ID }}" \
+              "CertificateArn=${{ secrets.CERTIFICATE_ARN }}"
