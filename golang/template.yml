@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Roastly API - Go AWS SAM
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: Route53 Hosted Zone ID for projects.lauraesteves.com
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for *.projects.lauraesteves.com
+
+Globals:
+  Function:
+    Runtime: provided.al2023
+    Architectures:
+      - arm64
+    Timeout: 10
+    MemorySize: 128
+    Handler: bootstrap
+    Environment:
+      Variables:
+        PRODUCTS_TABLE: !Ref ProductsTable
+        IS_OFFLINE: ''
+        DYNAMODB_ENDPOINT: ''
+
+Resources:
+
+  RoastlyGoHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      Domain:
+        DomainName: roastly-go-sam.projects.lauraesteves.com
+        CertificateArn: !Ref CertificateArn
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: roastly-go-sam-products
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  CreateProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/api/products/create/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        CreateProductApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RoastlyGoHttpApi
+            Path: /products
+            Method: POST
+    Metadata:
+      BuildMethod: go1.x
+
+  GetProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/api/products/get/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        GetProductApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RoastlyGoHttpApi
+            Path: /products/{id}
+            Method: GET
+    Metadata:
+      BuildMethod: go1.x
+
+  ListProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/api/products/list/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        ListProductsApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RoastlyGoHttpApi
+            Path: /products
+            Method: GET
+    Metadata:
+      BuildMethod: go1.x
+
+  UpdateProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/api/products/update/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        UpdateProductApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RoastlyGoHttpApi
+            Path: /products/{id}
+            Method: PUT
+    Metadata:
+      BuildMethod: go1.x
+
+  DeleteProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/api/products/delete/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        DeleteProductApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RoastlyGoHttpApi
+            Path: /products/{id}
+            Method: DELETE
+    Metadata:
+      BuildMethod: go1.x
+
+Outputs:
+  ApiUrl:
+    Description: Custom domain URL
+    Value: https://roastly-go-sam.projects.lauraesteves.com

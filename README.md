@@ -8,20 +8,30 @@ This is a **dual-language monorepo** with implementations in both **TypeScript (
 
 ```
 roastly-api/
-├── js/              # TypeScript / Node.js implementation
-├── golang/          # Go implementation
-├── postman/         # Shared Postman collections & environments
+├── .github/workflows/  # Path-filtered CI/CD per language
 ├── docker-compose.yml  # Shared DynamoDB Local
-└── .github/workflows/  # Path-filtered CI/CD per language
+├── golang/             # Go implementation
+├── js/                 # TypeScript / Node.js implementation
+└── postman/            # Shared Postman collections & environments
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
+**nvm** is required to manage Node.js versions. If you don't have it installed:
+
 ```bash
-make prepare        # Install Node 18 via nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 ```
+
+Then run:
+
+```bash
+make prepare
+```
+
+This installs Node 18 via nvm, JS dependencies (`npm ci`), and Go dependencies (`go mod tidy`).
 
 ### Database
 
@@ -72,6 +82,48 @@ make js-test
 | `make js-serverless-clean` | Remove `.serverless/` and `.esbuild/` |
 | `make js-sam-clean` | Remove `.aws-sam/` |
 | `make js-clean` | Clean both |
+
+## Go
+
+All Go commands are available via `make` from the project root.
+
+### Local Development
+
+| Command | Description | Port |
+| --- | --- | --- |
+| `make go-serverless-server` | Start Serverless offline | 8080 |
+| `make go-sam-server` | Start SAM local API | 8081 |
+| `make go-server` | Start both (sequentially) | — |
+
+### Build
+
+| Command | Description |
+| --- | --- |
+| `make go-serverless-build` | Cross-compile and zip for Serverless |
+| `make go-sam-build` | Build SAM |
+| `make go-build` | Build both |
+
+### Test
+
+```bash
+make go-test
+```
+
+### Deploy
+
+| Command | Description |
+| --- | --- |
+| `make go-serverless-deploy` | Deploy via Serverless Framework |
+| `make go-sam-deploy` | Deploy via AWS SAM |
+| `make go-deploy` | Deploy both |
+
+### Clean
+
+| Command | Description |
+| --- | --- |
+| `make go-serverless-clean` | Remove `bin/` and `.serverless/` |
+| `make go-sam-clean` | Remove `.aws-sam/` |
+| `make go-clean` | Clean both |
 
 ## Shared Resources
 
