@@ -166,7 +166,28 @@ go-test:
 # ═══════════════════════════════════════════════════
 
 test\:local:
-	./tests/test-all-endpoints.sh local
+	@echo "Starting local servers..."
+	@$(MAKE) db:up 2>/dev/null
+	@echo "Building SAM applications..."
+	@cd js && PATH=$$PWD/node_modules/.bin:$$PATH sam build > /dev/null 2>&1
+	@cd golang && sam build > /dev/null 2>&1
+	@echo "Starting servers..."
+	@bash -c '. /usr/local/opt/nvm/nvm.sh && nvm use 18 > /dev/null 2>&1 && cd js && npx sls offline --stage local --httpPort 3000 > /dev/null 2>&1' & echo $$! > /tmp/roastly-js-sls.pid
+	@cd js && sam local start-api --port 3001 --env-vars env.local.json > /dev/null 2>&1 & echo $$! > /tmp/roastly-js-sam.pid
+	@cd golang && sam local start-api --port 8080 --env-vars env.local.json > /dev/null 2>&1 & echo $$! > /tmp/roastly-go-sam.pid
+	@echo "Waiting for servers to be ready..."
+	@for port in 3000 3001 8080; do \
+		for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do \
+			curl -s -o /dev/null http://localhost:$$port/products 2>/dev/null && break; \
+			sleep 1; \
+		done; \
+	done
+	@./tests/test-all-endpoints.sh local; EXIT_CODE=$$?; \
+		kill $$(cat /tmp/roastly-js-sls.pid) 2>/dev/null; \
+		kill $$(cat /tmp/roastly-js-sam.pid) 2>/dev/null; \
+		kill $$(cat /tmp/roastly-go-sam.pid) 2>/dev/null; \
+		rm -f /tmp/roastly-js-sls.pid /tmp/roastly-js-sam.pid /tmp/roastly-go-sam.pid; \
+		exit $$EXIT_CODE
 
 test\:prod:
 	./tests/test-all-endpoints.sh prod
