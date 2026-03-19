@@ -1,9 +1,28 @@
-node_modules
-.vscode
-.serverless
-.tmp
-.terraform
-.dynamodb
-.aws-sam
-.esbuild
+# Node.js
+node_modules/
+dist/
+.serverless/
+.esbuild/
+.aws-sam/
+.tmp/
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+golang/bin/
+golang/vendor/
+go.work
+go.work.sum
+
+# IDE
+.vscode/
+
+# Infra
+.terraform/
+.dynamodb/
+
+# Environment
 .env
