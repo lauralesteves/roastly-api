@@ -116,13 +116,13 @@ while IFS= read -r name; do
   for code in "$create_code" "$get_code" "$list_code" "$update_code" "$delete_code"; do
     if [ "$code" = "200" ]; then
       PASS=$((PASS + 1))
-      printf "${SEP} ${GREEN}✔${NC}  %-6s " "$code"
+      printf "${SEP} ${GREEN}%-10s${NC} " "OK   $code"
     elif [ "$code" = "---" ]; then
       FAIL=$((FAIL + 1))
-      printf "${SEP} ${DIM}–${NC}  %-6s " "---"
+      printf "${SEP} ${DIM}%-10s${NC} " "--   ---"
     else
       FAIL=$((FAIL + 1))
-      printf "${SEP} ${RED}✘${NC}  %-6s " "$code"
+      printf "${SEP} ${RED}%-10s${NC} " "FAIL $code"
     fi
   done
   printf "${SEP}\n"
