@@ -1,6 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Roastly API - AWS SAM Version
+Description: Roastly API - JS AWS SAM
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: Route53 Hosted Zone ID for projects.lauraesteves.com
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for *.projects.lauraesteves.com
 
 Globals:
   Function:
@@ -10,13 +18,25 @@ Globals:
     Environment:
       Variables:
         PRODUCTS_TABLE: !Ref ProductsTable
+        IS_OFFLINE: ''
+        DYNAMODB_ENDPOINT: ''
 
 Resources:
+
+  RoastlyHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      Domain:
+        DomainName: roastly-js-sam.projects.lauraesteves.com
+        CertificateArn: !Ref CertificateArn
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
 
   ProductsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: roastly-dev-models
+      TableName: roastly-js-sam-products
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -29,58 +49,118 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: src/controllers/products.createHandler
+      Handler: products.createHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         CreateProductApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref RoastlyHttpApi
             Path: /products
             Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/controllers/products.ts
 
   GetProductFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: src/controllers/products.getHandler
+      Handler: products.getHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         GetProductApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref RoastlyHttpApi
             Path: /products/{id}
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/controllers/products.ts
 
   ListProductsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: src/controllers/products.listHandler
+      Handler: products.listHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         ListProductsApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref RoastlyHttpApi
             Path: /products
             Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/controllers/products.ts
 
   UpdateProductFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: src/controllers/products.updateHandler
+      Handler: products.updateHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         UpdateProductApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref RoastlyHttpApi
             Path: /products/{id}
             Method: PUT
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/controllers/products.ts
 
   DeleteProductFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: src/controllers/products.deleteHandler
+      Handler: products.deleteHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
       Events:
         DeleteProductApi:
           Type: HttpApi
           Properties:
+            ApiId: !Ref RoastlyHttpApi
             Path: /products/{id}
             Method: DELETE
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        EntryPoints:
+          - src/controllers/products.ts
+
+Outputs:
+  ApiUrl:
+    Description: Custom domain URL
+    Value: https://roastly-js-sam.projects.lauraesteves.com
