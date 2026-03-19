@@ -31,7 +31,7 @@ Resources:
     Properties:
       StageName: prod
       Domain:
-        DomainName: roastly-go-sam.projects.lauraesteves.com
+        DomainName: roastly-api-go-sam.projects.lauraesteves.com
         CertificateArn: !Ref CertificateArn
         Route53:
           HostedZoneId: !Ref HostedZoneId
@@ -39,7 +39,7 @@ Resources:
   ProductsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: roastly-go-sam-products
+      TableName: roastly-api-go-sam-products
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -136,4 +136,4 @@ Resources:
 Outputs:
   ApiUrl:
     Description: Custom domain URL
-    Value: https://roastly-go-sam.projects.lauraesteves.com
+    Value: https://roastly-api-go-sam.projects.lauraesteves.com

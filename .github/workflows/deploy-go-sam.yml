@@ -39,7 +39,7 @@ jobs:
       - name: Deploy SAM application
         run: |
           sam deploy \
-            --stack-name roastly-go-sam \
+            --stack-name roastly-api-go-sam \
             --capabilities CAPABILITY_IAM \
             --region us-east-1 \
             --resolve-s3 \
